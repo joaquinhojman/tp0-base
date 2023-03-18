@@ -146,3 +146,6 @@ Ejecutandose ese comando se crea el archivo pedido. Luego debera reemplazarse el
 
 Comentario de implementacion: se decidio que el script copie el archivo original como base para que en caso de querer modificar configuraciones ajenas a la cantidad de clientes, sea mas facil hacerlo solo modificando este archivo original. Si el archivo se creara completo desde el script, habria que modificar dicho script si se quisieran hacer cambios ajenos a la cantidad de clientes.
 Esto implica la "limitación" de que el archivo nuevo debe llamarse diferente al archivo docker compose original (docker-compose-dev).
+
+### Ejercicio N°2:
+Simplemente ejecutando docker-compose-up y docker-compose-logs se puede correr el programa, no hay cambios en la forma de ejecutar.

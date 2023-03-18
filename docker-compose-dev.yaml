@@ -18,6 +18,8 @@ services:
       - LOGGING_LEVEL=DEBUG
     networks:
       - testing_net
+    volumes:
+      - ./server/config.ini:/config.ini
 
   client1: &client # https://docs.docker.com/compose/compose-file/#fragments
     container_name: client1
@@ -30,3 +32,5 @@ services:
       - testing_net
     depends_on:
       - server
+    volumes:
+      - ./client/config.yaml:/config.yaml
