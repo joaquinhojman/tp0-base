@@ -133,3 +133,8 @@ La Parte 2 requiere una sección donde se explique el protocolo de comunicación
 La Parte 3 requiere una sección que expliquen los mecanismos de sincronización utilizados.
 
 Finalmente, se pide a los alumnos leer atentamente y **tener en cuenta** los criterios de corrección provistos [en el campus](https://campusgrado.fi.uba.ar/mod/page/view.php?id=73393).
+
+## ¿Como ejecutar cada ejercicio?
+
+### Ejercicio N°1:
+Simplemente ejecutando docker-compose-up y docker-compose-logs se puede ver en la consola como ahora hay dos clientes que intercambian mensajes con el servidor. El cliente original es "client1" y el cliente nuevo es "client2". El id del cliente se indica tambien en el campo "msg".
