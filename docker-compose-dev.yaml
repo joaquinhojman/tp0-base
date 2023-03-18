@@ -1,5 +1,13 @@
 version: '3.9'
 name: tp0
+
+networks:
+  testing_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.125.0/24
+
 services:
   server:
     container_name: server
@@ -22,17 +30,3 @@ services:
       - testing_net
     depends_on:
       - server
-
-  client2:
-    <<: *client
-    container_name: client2
-    environment:
-      - CLI_ID=2
-      - CLI_LOG_LEVEL=DEBUG
-
-networks:
-  testing_net:
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.25.125.0/24

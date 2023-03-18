@@ -138,3 +138,11 @@ Finalmente, se pide a los alumnos leer atentamente y **tener en cuenta** los cri
 
 ### Ejercicio N°1:
 Simplemente ejecutando docker-compose-up y docker-compose-logs se puede ver en la consola como ahora hay dos clientes que intercambian mensajes con el servidor. El cliente original es "client1" y el cliente nuevo es "client2". El id del cliente se indica tambien en el campo "msg".
+
+### Ejercicio N°1.1:
+Usage: python3 docker-compose-multiple-clients-generator.py <number of clients> <name of new docker compose>.yaml
+
+Ejecutandose ese comando se crea el archivo pedido. Luego debera reemplazarse el original por este en el Makefile para ejecutar el sistema con la nueva configuración. En caso de llamar al script sin parametros tomara por default 1 cliente (idem docker compose original) y un nombre definido en el .py para el archivo. En caso de mandar solo el parametro de numero de clientes, tomara por default solo el nombre del archivo. Este nombre por default del archivo ya mencionado es "docker-compose-multiple-clients.yaml".
+
+Comentario de implementacion: se decidio que el script copie el archivo original como base para que en caso de querer modificar configuraciones ajenas a la cantidad de clientes, sea mas facil hacerlo solo modificando este archivo original. Si el archivo se creara completo desde el script, habria que modificar dicho script si se quisieran hacer cambios ajenos a la cantidad de clientes.
+Esto implica la "limitación" de que el archivo nuevo debe llamarse diferente al archivo docker compose original (docker-compose-dev).
