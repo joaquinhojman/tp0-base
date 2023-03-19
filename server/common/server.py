@@ -1,7 +1,5 @@
 import socket
 import logging
-import sys
-
 
 class Server:
     def __init__(self, port, listen_backlog):
@@ -9,9 +7,11 @@ class Server:
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_socket.bind(('', port))
         self._server_socket.listen(listen_backlog)
+        self._sigterm_received = False
 
     def _sigterm_handler(self, _signo, _stack_frame):
         logging.info(f'action: Handle SIGTERM | result: in_progress')
+        self._sigterm_received = True
         self._server_socket.shutdown(socket.SHUT_RDWR)
         self._server_socket.close()
         logging.info(f'action: Handle SIGTERM | result: success')
@@ -24,7 +24,7 @@ class Server:
         communication with a client. After client with communucation
         finishes, servers starts to accept new connections again
         """
-        while True:
+        while not self._sigterm_received:
             client_sock = self.__accept_new_connection()
             if client_sock is None: break
             self.__handle_client_connection(client_sock)

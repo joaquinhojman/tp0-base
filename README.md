@@ -155,4 +155,4 @@ La forma de ejecutar este ejercicio es docker-compose-up que levanta servidor (y
 
 ### Ejercicio N°4: 
 -t 1 significa que se espera 1 segundo antes de hacer kill al container.
-Se ejecuta normalmente el programa, al hacer docker-compose-down se veran los logs que indican que se manejo correctamente la señal SIGTERM.
+Se ejecuta normalmente el programa, al hacer docker-compose-down se veran los logs que indican que se manejo correctamente la señal SIGTERM tanto en el cliente como en el servidor.
