@@ -37,3 +37,8 @@ docker-compose-down:
 docker-compose-logs:
 	docker compose -f docker-compose-dev.yaml logs -f
 .PHONY: docker-compose-logs
+
+docker-compose-server-test:
+	docker build -f ./server_test/Dockerfile -t server_test .
+	docker run --network tp0_testing_net server_test
+.PHONY: docker-compose-server-test

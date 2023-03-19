@@ -149,3 +149,6 @@ Esto implica la "limitación" de que el archivo nuevo debe llamarse diferente al
 
 ### Ejercicio N°2:
 Simplemente ejecutando docker-compose-up y docker-compose-logs se puede correr el programa, no hay cambios en la forma de ejecutar.
+
+### Ejercicio N°3:
+La forma de ejecutar este ejercicio es docker-compose-up que levanta servidor (y cliente) y luego para testear el servidor ejecutar docker-compose-server-test. La palabra enviada es PING asi que debemos recibir PING como respuesta por consola. Si no lo recibimos o recibimos otra cosa, hay problemas con el servidor.

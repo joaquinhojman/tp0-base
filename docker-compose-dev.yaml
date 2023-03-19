@@ -16,6 +16,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=DEBUG
+      - SERVER_PORT=7574
     networks:
       - testing_net
     volumes:
