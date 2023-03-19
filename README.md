@@ -152,3 +152,7 @@ Simplemente ejecutando docker-compose-up y docker-compose-logs se puede correr e
 
 ### Ejercicio N°3:
 La forma de ejecutar este ejercicio es docker-compose-up que levanta servidor (y cliente) y luego para testear el servidor ejecutar docker-compose-server-test. La palabra enviada es PING asi que debemos recibir PING como respuesta por consola. Si no lo recibimos o recibimos otra cosa, hay problemas con el servidor.
+
+### Ejercicio N°4: 
+-t 1 significa que se espera 1 segundo antes de hacer kill al container.
+Se ejecuta normalmente el programa, al hacer docker-compose-down se veran los logs que indican que se manejo correctamente la señal SIGTERM.
