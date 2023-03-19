@@ -1,1 +1,1 @@
-echo "PING" | nc server 7574
+echo "PING" | nc server 12345
