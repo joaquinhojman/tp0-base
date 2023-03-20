@@ -49,3 +49,6 @@ def load_bets() -> list[Bet]:
         for row in reader:
             yield Bet(row[0], row[1], row[2], row[3], row[4], row[5])
 
+def parse_client_bet(bet_as_string):
+    agency, first_name, last_name, document, birthdate, number = bet_as_string.split(',')
+    return Bet(agency, first_name, last_name, document, birthdate, number)
