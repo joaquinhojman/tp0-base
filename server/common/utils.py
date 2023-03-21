@@ -1,5 +1,6 @@
 import csv
 import datetime
+import logging
 import time
 
 
@@ -38,6 +39,7 @@ def store_bets(bets: list[Bet]) -> None:
         for bet in bets:
             writer.writerow([bet.agency, bet.first_name, bet.last_name,
                              bet.document, bet.birthdate, bet.number])
+            logging.info(f'action: apuesta_almacenada | result: success | dni: {bet.document} | numero: {bet.number}')
 
 """
 Loads the information all the bets in the STORAGE_FILEPATH file.
@@ -49,6 +51,12 @@ def load_bets() -> list[Bet]:
         for row in reader:
             yield Bet(row[0], row[1], row[2], row[3], row[4], row[5])
 
-def parse_client_bet(bet_as_string):
-    agency, first_name, last_name, document, birthdate, number = bet_as_string.split(',')
-    return Bet(agency, first_name, last_name, document, birthdate, number)
+"""
+Parses a bet from a string received by socket from client.
+"""
+def parse_client_bets(bets_received_form_client: str) -> list[Bet]:
+    bets = []
+    for bet_as_string in bets_received_form_client.split(';'):
+        agency, first_name, last_name, document, birthdate, number = bet_as_string.split(',')
+        bets.append(Bet(agency, first_name, last_name, document, birthdate, number))
+    return bets

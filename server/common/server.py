@@ -1,6 +1,8 @@
 import socket
 import logging
 
+from server.common.utils import store_bets, parse_client_bets
+
 class Server:
     def __init__(self, port, listen_backlog):
         # Initialize server socket
@@ -38,15 +40,19 @@ class Server:
         """
         try:
             # TODO: Modify the receive to avoid short-reads
-            msg = client_sock.recv(1024).rstrip().decode('utf-8')
-            addr = client_sock.getpeername()
-            logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
+            protocol = protocol(client_sock)
+            msg = protocol.receive_bets()
+            bets = parse_client_bets(msg)
+            store_bets(bets)
             # TODO: Modify the send to avoid short-writes
-            client_sock.send("{}\n".format(msg).encode('utf-8'))
-        except (OSError, Exception) as e:
+            protocol.send_bets_ack(True)
+        except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
+        except Exception as e:
+            protocol.send_bets_ack(False)
+            logging.error("action: apuesta_almacenada | result: fail | error: {e}")
         finally:
-            client_sock.close()
+            protocol.close_connection()
 
     def __accept_new_connection(self):
         """
