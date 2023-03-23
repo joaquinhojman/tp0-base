@@ -55,7 +55,7 @@ class Protocol:
             bet += received.decode('utf-8')
         
         addr = self._socket.getpeername()
-        logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {bet}')
+        logging.info(f'action: receive_bets | result: success | ip: {addr[0]} | msg: {bet}')
         
         return bet
 
@@ -88,13 +88,43 @@ class Protocol:
         logging.info(f'action: receive_ack | result: success | ip: {addr[0]} | msg: {ack}')
         return ack
 
+    def send_bets(self, bets: str):
+        """
+        Send bets to server.
+        """
+        bets_bytes = bets.encode('utf-8')
+
+        bets_len = len(bets_bytes)
+        self._send_bets_len(bets_len)
+        
+        self._socket.send(bets_bytes) #need to avoid short write yet
+        addr = self._socket.getpeername()
+        logging.info(f'action: send_bets | result: success | ip: {addr[0]} | msg: {bets}')
+
+
+    def _send_bets_len(self, bets_len: int):
+        bets_len_bytes = bets_len.to_bytes(self._cant_bytes_for_len, byteorder='big')
+        sended = 0
+        while sended < self._cant_bytes_for_len:
+            sent = self._socket.send(bets_len_bytes)
+            if sent != -1:
+                sended += sent
+            else:
+                raise RuntimeError("Socket connection broken during send bets len")
+
     def send_bets_ack(self, ack: bool):
         """
         Send a bets ack to the client.
         """
         ack_response = self._success_ack if ack == True else self._error_ack
-        ack_bytes = ack_response.encode('utf-8')
-        self._socket.send(ack_bytes)
+        ack_bytes = ack_response.to_bytes(self._cant_bytes_for_ack, byteorder='big')
+        sended = 0
+        while sended < self._cant_bytes_for_ack:
+            sent = self._socket.send(ack_bytes)
+            if sent != -1:
+                sended += sent
+            else:
+                raise RuntimeError("Socket connection broken during send ack")
         addr = self._socket.getpeername()
         logging.info(f'action: send_ack | result: success | ip: {addr[0]} | msg: {ack}')
 
