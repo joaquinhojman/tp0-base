@@ -10,6 +10,7 @@ def _initialize_config():
     config_params = {}
     try:
         config_params["cant_bytes_for_len"] = os.getenv('CANT_BYTES_FOR_LEN', config["DEFAULT"]["CANT_BYTES_FOR_LEN"])
+        config_params["cant_bytes_for_ack"] = os.getenv('CANT_BYTES_FOR_ACK', config["DEFAULT"]["CANT_BYTES_FOR_ACK"])
         config_params["max_cant_bytes_for_packet"] = os.getenv('MAX_CANT_BYTES_FOR_PACKET', config["DEFAULT"]["MAX_CANT_BYTES_FOR_PACKET"])
         config_params["success_ack"] = os.getenv('SUCCESS_ACK', config["DEFAULT"]["SUCCESS_ACK"])
         config_params["error_ack"] = os.getenv('ERROR_ACK', config["DEFAULT"]["ERROR_ACK"])
@@ -28,6 +29,7 @@ class Protocol:
         self._max_cant_bytes_for_packet = config_params["max_cant_bytes_for_packet"]
         self._success_ack = config_params["success_ack"]
         self._error_ack = config_params["error_ack"]
+        self._cant_bytes_for_ack = config_params["cant_bytes_for_ack"]
 
     def receive_bets(self):
         """
@@ -35,14 +37,22 @@ class Protocol:
         """
         packet_len = self._receive_packet_len()
         
+        expected_bytes = 0
         bytes_received = 0
         bet = ""
         while bytes_received < packet_len:
-            if packet_len - bytes_received > self._max_cant_bytes_for_packet:
-                bet += self._socket.recv(self._max_cant_bytes_for_packet).decode('utf-8')
-            else:
-                bet += self._socket.recv(packet_len - bytes_received).decode('utf-8')
-            bytes_received = len(bet)
+            if expected_bytes == 0:
+                if packet_len - bytes_received > self._max_cant_bytes_for_packet:
+                    expected_bytes = self._max_cant_bytes_for_packet
+                else:
+                    expected_bytes = packet_len - bytes_received
+            
+            received = self._socket.recv(expected_bytes)
+
+            expected_bytes -= len(received) #for possible short read
+
+            bytes_received += len(received)
+            bet += received.decode('utf-8')
         
         addr = self._socket.getpeername()
         logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {bet}')
@@ -53,9 +63,30 @@ class Protocol:
         """
         Receive the packet length from the client.
         """
-        packet_len_bytes = self._socket.recv(self._cant_bytes_for_len)
+        received = 0
+        packet_len_bytes = bytearray(self._cant_bytes_for_len)
+        while received < self._cant_bytes_for_len:
+            packet_len_bytes += self._socket.recv(self._cant_bytes_for_len - received)
+            received = len(packet_len_bytes)
+
         packet_len = int.from_bytes(packet_len_bytes, byteorder='big')
         return packet_len
+
+    def receive_ack(self):
+        """
+        Receive an ack from the server.
+        """
+        received = 0
+        ack_bytes = bytearray(self._cant_bytes_for_ack)
+        while received < self._cant_bytes_for_ack:
+            ack_bytes += self._socket.recv(self._cant_bytes_for_ack - received)
+            received = len(ack_bytes)
+
+        ack = True if int.from_bytes(ack_bytes, byteorder='big') == self._success_ack else False
+
+        addr = self._socket.getpeername()
+        logging.info(f'action: receive_ack | result: success | ip: {addr[0]} | msg: {ack}')
+        return ack
 
     def send_bets_ack(self, ack: bool):
         """

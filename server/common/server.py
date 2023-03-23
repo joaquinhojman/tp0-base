@@ -39,11 +39,11 @@ class Server:
         client socket will also be closed
         """
         try:
-            # TODO: Modify the receive to avoid short-reads
             protocol = protocol(client_sock)
             msg = protocol.receive_bets()
             bets = parse_client_bets(msg)
             store_bets(bets)
+            
             # TODO: Modify the send to avoid short-writes
             protocol.send_bets_ack(True)
         except OSError as e:
