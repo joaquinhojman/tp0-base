@@ -19,26 +19,28 @@ class Client:
 
     def _sigterm_handler(self, _signo, _stack_frame):
         logging.info(f'action: Handle SIGTERM | result: in_progress')
-        self._socket.shutdown(socket.SHUT_RDWR)
-        self._socket.close()
+        self.close_connection()
         logging.info(f'action: Handle SIGTERM | result: success')
 
     def run(self):
-        
-        protocol = Protocol(self._socket)
+        try:
+            protocol = Protocol(self._socket)
+            bet = self._get_bet()
+            protocol.send_bets(bet)
 
-        bet = self._get_bet()
-
-        protocol.send_bets(bet)
-
-        ack = protocol.receive_ack()
-
-        if ack: #revisar logs
-            logging.info(f'action: apuesta_enviada | result: success | dni: {self._documento} | numero: {self._numero}')
-        else:
-            logging.info(f'action: apuesta_enviada | result: fail | dni: {self._documento} | numero: {self._numero}')
-
-        protocol.close_connection()
+            ack = protocol.receive_ack()
+            if ack:
+                logging.info(f'action: apuesta_enviada | result: success | dni: {self._documento} | numero: {self._numero}')
+            else:
+                logging.info(f'action: apuesta_enviada | result: fail | dni: {self._documento} | numero: {self._numero}')
+        except (OSError, Exception) as e:
+            logging.error("action: send_bets | result: fail | error: {e}")
+        finally:
+            self._close_connection()
 
     def _get_bet(self):
         return self._agencia + "," + self._nombre + "," + self._apellido + "," + self._documento + "," + self._nacimiento + "," + self._numero
+
+    def _close_connection(self):
+        self._socket.shutdown(socket.SHUT_RDWR)
+        self._socket.close()

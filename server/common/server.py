@@ -47,14 +47,14 @@ class Server:
             bets = parse_client_bets(msg)
             store_bets(bets)
 
-            protocol.send_bets_ack(True)
+            protocol.send_ack(True)
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
         except Exception as e:
             protocol.send_bets_ack(False)
             logging.error("action: apuesta_almacenada | result: fail | error: {e}")
         finally:
-            protocol.close_connection()
+            self._close_client_connection(client_sock)
 
     def __accept_new_connection(self):
         """
@@ -72,3 +72,7 @@ class Server:
             return c
         except OSError as e:
             return None
+
+    def _close_client_connection(self, client_socket):
+        client_socket.shutdown(socket.SHUT_RDWR)
+        client_socket.close()

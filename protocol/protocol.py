@@ -49,6 +49,9 @@ class Protocol:
             
             received = self._socket.recv(expected_bytes)
 
+            if received is None:
+                raise OSError("Received None from socket on recv bets")
+
             expected_bytes -= len(received) #for possible short read
 
             bytes_received += len(received)
@@ -66,7 +69,10 @@ class Protocol:
         received = 0
         packet_len_bytes = bytearray(self._cant_bytes_for_len)
         while received < self._cant_bytes_for_len:
-            packet_len_bytes += self._socket.recv(self._cant_bytes_for_len - received)
+            received = self._socket.recv(self._cant_bytes_for_len - received)
+            if received is None:
+                raise OSError("Received None from socket on rec packet len")
+            packet_len_bytes += received
             received = len(packet_len_bytes)
 
         packet_len = int.from_bytes(packet_len_bytes, byteorder='big')
@@ -79,7 +85,10 @@ class Protocol:
         received = 0
         ack_bytes = bytearray(self._cant_bytes_for_ack)
         while received < self._cant_bytes_for_ack:
-            ack_bytes += self._socket.recv(self._cant_bytes_for_ack - received)
+            received = self._socket.recv(self._cant_bytes_for_ack - received)
+            if received is None:
+                raise OSError("Received None from socket on recv ack")
+            ack_bytes += received
             received = len(ack_bytes)
 
         ack = True if int.from_bytes(ack_bytes, byteorder='big') == self._success_ack else False
@@ -126,7 +135,7 @@ class Protocol:
             else:
                 raise OSError("Socket connection broken during send bets len")
 
-    def send_bets_ack(self, ack: bool):
+    def send_ack(self, ack: bool):
         """
         Send a bets ack to the client.
         """
@@ -141,7 +150,3 @@ class Protocol:
                 raise OSError("Socket connection broken during send ack")
         addr = self._socket.getpeername()
         logging.info(f'action: send_ack | result: success | ip: {addr[0]} | msg: {ack}')
-
-    def close_connection(self):
-        self._socket.shutdown(socket.SHUT_RDWR)
-        self._socket.close()

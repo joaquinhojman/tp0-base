@@ -156,3 +156,9 @@ La forma de ejecutar este ejercicio es docker-compose-up que levanta servidor (y
 ### Ejercicio N°4: 
 -t 1 significa que se espera 1 segundo antes de hacer kill al container.
 Se ejecuta normalmente el programa, al hacer docker-compose-down se veran los logs que indican que se manejo correctamente la señal SIGTERM tanto en el cliente como en el servidor.
+
+### Ejercicio N°4: 
+Para ejecutar el programa se debe hacer como se venia ejecutando normalmente: docker-compose-up y docker-compose-logs para ver los logs. Luego si se ejecuta ' docker exec -it server /bin/bash -c "cat bets.csv" ' puede verse el archivo de apuestas del servidor para corroborar que se hayan cargado correctamente.
+
+Breve explicación del protocolo: primero se envian 4 bytes (siempre esa cantidad) con la cantidad de bytes que ocupara el mensaje (la apuesta) que se enviara a continuación, y luego se envia dicha apuesta en paquetes de bytes de hasta 8kb. Una vez que finaliza la transmisión se envia un ack que consiste siempre en 4 bytes donde puede venir un 1 (procesamiento correcto) o 0 (ocurrio un error). El protocolo contempla posibles short read y short write.
+La apuesta se envia con los campos separados por coma ",". Si se enviara mas de una apuesta, se separan con ";".
