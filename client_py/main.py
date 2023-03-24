@@ -27,6 +27,7 @@ def initialize_config():
         config_params["ip"] = os.getenv('SERVER_IP', config["DEFAULT"]["SERVER_IP"])
         config_params["port"] = int(os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
+        config_params["bets_per_batch"] = int(os.getenv('BETS_PER_BATCH', config["DEFAULT"]["BETS_PER_BATCH"]))
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting client".format(e))
     except ValueError as e:
@@ -40,6 +41,7 @@ def main():
     ip = config_params["ip"]
     port = config_params["port"]
     logging_level = config_params["logging_level"]
+    bets_per_batch = config_params["bets_per_batch"]
 
     initialize_log(logging_level)
 
@@ -49,7 +51,7 @@ def main():
     #              f"listen_backlog: {listen_backlog} | logging_level: {logging_level}")
 
     # Initialize client
-    client = Client(port, ip)
+    client = Client(port, ip, bets_per_batch)
     signal.signal(signal.SIGTERM, client._sigterm_handler)
     client.run()
 

@@ -6,13 +6,13 @@ import socket
 from protocol.protocol import Protocol
 
 class Client:
-    def __init__(self, port, ip):
+    def __init__(self, port, ip, bets_per_batch):
         self._agencia = os.getenv('CLI_ID', "")
-        self._nombre = os.getenv('NOMBRE', "")
-        self._apellido = os.getenv('APELLIDO', "")
-        self._documento = os.getenv('DOCUMENTO', "")
-        self._nacimiento = os.getenv('NACIMIENTO', "")
-        self._numero = os.getenv('NUMERO', "")
+        self._bets_file = os.getenv('BETS_FILE', "")
+        self._bets_per_batch = bets_per_batch
+        
+        self._bets_readed = 0
+        self._f = open(self._bets_file, 'r')
 
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((ip, port))
@@ -23,24 +23,44 @@ class Client:
         logging.info(f'action: Handle SIGTERM | result: success')
 
     def run(self):
+        eof = False
         try:
             protocol = Protocol(self._socket)
-            bet = self._get_bet()
-            protocol.send_bets(bet)
+            while not eof:    
+                bets, eof = self._get_bets()            
+                protocol.send_bets(bets, eof)
 
-            ack = protocol.receive_ack()
-            if ack:
-                logging.info(f'action: apuesta_enviada | result: success | dni: {self._documento} | numero: {self._numero}')
-            else:
-                logging.info(f'action: apuesta_enviada | result: fail | dni: {self._documento} | numero: {self._numero}')
+                ack = protocol.receive_ack()
+                if ack:
+                    logging.info(f'action: apuesta_enviada | result: success')
+                else:
+                    logging.info(f'action: apuesta_enviada | result: fail')
         except (OSError, Exception) as e:
-            logging.error("action: send_bets | result: fail | error: {e}")
+            logging.error(f'action: send_bets | result: fail | error: {e}')
         finally:
             self._close_connection()
 
-    def _get_bet(self):
-        return self._agencia + "," + self._nombre + "," + self._apellido + "," + self._documento + "," + self._nacimiento + "," + self._numero
+    def _get_bets(self):
+        bets = []
+        eof = False
+        for _i in range(self._bets_per_batch):
+            line = self._f.readline()
+            if not line: #End of file?
+                eof = True
+                break
+            line = self._agencia + "," + line.rstrip()
+            bets.append(line)
+        
+        if eof == False: # could happen that next line is end of file
+            x = self._f.tell()
+            line = self._f.readline()
+            self._f.seek(x) #return to previous position
+            if not line:
+                eof = True
+
+        return ";".join(bets), eof
 
     def _close_connection(self):
+        self._f.close()
         self._socket.shutdown(socket.SHUT_RDWR)
         self._socket.close()

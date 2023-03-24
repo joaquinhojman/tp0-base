@@ -40,19 +40,24 @@ class Server:
         If a problem arises in the communication with the client, the
         client socket will also be closed
         """
+        eof = False
         try:
             protocol = Protocol(client_sock)
-            msg = protocol.receive_bets()
+            while not eof:
+                msg, eof = protocol.receive_bets()
 
-            bets = parse_client_bets(msg)
-            store_bets(bets)
+                bets = parse_client_bets(msg)
+                store_bets(bets)
 
-            protocol.send_ack(True)
+                protocol.send_ack(True)
         except OSError as e:
-            logging.error("action: receive_message | result: fail | error: {e}")
+            logging.error(f'action: receive_message | result: fail | error: {e}')
         except Exception as e:
-            protocol.send_bets_ack(False)
-            logging.error("action: apuesta_almacenada | result: fail | error: {e}")
+            try:
+                protocol.send_ack(False)
+            except OSError as e:
+                logging.error(f'action: receive_message | result: fail | error: {e}')
+            logging.error(f'action: apuesta_almacenada | result: fail | error: {e}')
         finally:
             self._close_client_connection(client_sock)
 
@@ -65,7 +70,7 @@ class Server:
         """
 
         # Connection arrived
-        logging.info('action: accept_connections | result: in_progress')
+        logging.info(f'action: accept_connections | result: in_progress')
         try:      
             c, addr = self._server_socket.accept()
             logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')
