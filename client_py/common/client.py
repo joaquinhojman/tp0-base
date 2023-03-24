@@ -21,6 +21,7 @@ class Client:
     def _sigterm_handler(self, _signo, _stack_frame):
         logging.info(f'action: Handle SIGTERM | result: in_progress')
         self.close_connection()
+        self._f.close()
         logging.info(f'action: Handle SIGTERM | result: success')
 
     def run(self):
@@ -40,10 +41,13 @@ class Client:
                     logging.info(f'action: apuesta_enviada | result: success')
                 else:
                     logging.info(f'action: apuesta_enviada | result: fail')
+                
+                self._close_connection()
         except (OSError, Exception) as e:
             logging.error(f'action: send_bets | result: fail | error: {e}')
-        finally:
             self._close_connection()
+
+        self._f.close()
 
     def _get_bets(self):
         bets = []
@@ -66,6 +70,5 @@ class Client:
         return ";".join(bets), eof
 
     def _close_connection(self):
-        self._f.close()
         self._socket.shutdown(socket.SHUT_RDWR)
         self._socket.close()
