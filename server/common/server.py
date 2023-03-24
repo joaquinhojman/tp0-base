@@ -1,6 +1,8 @@
 import socket
 import logging
 
+from protocol.protocol import Protocol
+
 from server.common.utils import store_bets, parse_client_bets
 
 class Server:
@@ -39,7 +41,7 @@ class Server:
         client socket will also be closed
         """
         try:
-            protocol = protocol(client_sock)
+            protocol = Protocol(client_sock)
             msg = protocol.receive_bets()
 
             bets = parse_client_bets(msg)
