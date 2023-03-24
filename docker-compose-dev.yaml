@@ -20,13 +20,19 @@ services:
       - testing_net
     volumes:
       - ./server/config.ini:/config.ini
+      - ./protocol/protocol.ini:/protocol.ini
 
   client1: &client # https://docs.docker.com/compose/compose-file/#fragments
     container_name: client1
     image: client_py:latest
-    entrypoint: /client_py
+    entrypoint: python3 /main.py
     environment:
       - CLI_ID=1
+      - NOMBRE=Lionel
+      - APELLIDO=Messi
+      - DOCUMENTO=18122022
+      - NACIMIENTO=1987-06-24
+      - NUMERO=1010
       - CLI_LOG_LEVEL=DEBUG
     networks:
       - testing_net
@@ -34,3 +40,4 @@ services:
       - server
     volumes:
       - ./client_py/config.ini:/config.ini
+      - ./protocol/protocol.ini:/protocol.ini

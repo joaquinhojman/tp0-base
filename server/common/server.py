@@ -3,7 +3,7 @@ import logging
 
 from protocol.protocol import Protocol
 
-from server.common.utils import store_bets, parse_client_bets
+from common.utils import store_bets, parse_client_bets
 
 class Server:
     def __init__(self, port, listen_backlog):

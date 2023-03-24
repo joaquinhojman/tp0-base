@@ -1,11 +1,19 @@
 
 import logging
+import os
 import socket
 
 from protocol.protocol import Protocol
 
 class Client:
     def __init__(self, port, ip):
+        self._agencia = os.getenv('CLI_ID', "")
+        self._nombre = os.getenv('NOMBRE', "")
+        self._apellido = os.getenv('APELLIDO', "")
+        self._documento = os.getenv('DOCUMENTO', "")
+        self._nacimiento = os.getenv('NACIMIENTO', "")
+        self._numero = os.getenv('NUMERO', "")
+
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((ip, port))
 
@@ -18,15 +26,19 @@ class Client:
     def run(self):
         
         protocol = Protocol(self._socket)
-        bets = "blablabla"
 
-        protocol.send_bet(bets)
+        bet = self._get_bet()
+
+        protocol.send_bets(bet)
 
         ack = protocol.receive_ack()
 
         if ack: #revisar logs
-            logging.info(f'action: send_bet | result: success | bet: {bets}')
+            logging.info(f'action: apuesta_enviada | result: success | dni: {self._documento} | numero: {self._numero}')
         else:
-            logging.info(f'action: send_bet | result: fail | bet: {bets}')
+            logging.info(f'action: apuesta_enviada | result: fail | dni: {self._documento} | numero: {self._numero}')
 
         protocol.close_connection()
+
+    def _get_bet(self):
+        return self._agencia + "," + self._nombre + "," + self._apellido + "," + self._documento + "," + self._nacimiento + "," + self._numero

@@ -24,7 +24,7 @@ def initialize_config():
 
     config_params = {}
     try:
-        config_params["ip"] = int(os.getenv('SERVER_IP', config["DEFAULT"]["SERVER_IP"]))
+        config_params["ip"] = os.getenv('SERVER_IP', config["DEFAULT"]["SERVER_IP"])
         config_params["port"] = int(os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
     except KeyError as e:

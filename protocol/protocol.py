@@ -9,11 +9,11 @@ def _initialize_config():
 
     config_params = {}
     try:
-        config_params["cant_bytes_for_len"] = os.getenv('CANT_BYTES_FOR_LEN', config["DEFAULT"]["CANT_BYTES_FOR_LEN"])
-        config_params["cant_bytes_for_ack"] = os.getenv('CANT_BYTES_FOR_ACK', config["DEFAULT"]["CANT_BYTES_FOR_ACK"])
-        config_params["max_cant_bytes_for_packet"] = os.getenv('MAX_CANT_BYTES_FOR_PACKET', config["DEFAULT"]["MAX_CANT_BYTES_FOR_PACKET"])
-        config_params["success_ack"] = os.getenv('SUCCESS_ACK', config["DEFAULT"]["SUCCESS_ACK"])
-        config_params["error_ack"] = os.getenv('ERROR_ACK', config["DEFAULT"]["ERROR_ACK"])
+        config_params["cant_bytes_for_len"] = int(os.getenv('CANT_BYTES_FOR_LEN', config["DEFAULT"]["CANT_BYTES_FOR_LEN"]))
+        config_params["cant_bytes_for_ack"] = int(os.getenv('CANT_BYTES_FOR_ACK', config["DEFAULT"]["CANT_BYTES_FOR_ACK"]))
+        config_params["max_cant_bytes_for_packet"] = int(os.getenv('MAX_CANT_BYTES_FOR_PACKET', config["DEFAULT"]["MAX_CANT_BYTES_FOR_PACKET"]))
+        config_params["success_ack"] = int(os.getenv('SUCCESS_ACK', config["DEFAULT"]["SUCCESS_ACK"]))
+        config_params["error_ack"] = int(os.getenv('ERROR_ACK', config["DEFAULT"]["ERROR_ACK"]))
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
