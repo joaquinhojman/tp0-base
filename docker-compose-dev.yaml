@@ -23,8 +23,8 @@ services:
 
   client1: &client # https://docs.docker.com/compose/compose-file/#fragments
     container_name: client1
-    image: client:latest
-    entrypoint: /client
+    image: client_py:latest
+    entrypoint: /client_py
     environment:
       - CLI_ID=1
       - CLI_LOG_LEVEL=DEBUG
@@ -33,4 +33,4 @@ services:
     depends_on:
       - server
     volumes:
-      - ./client/config.ini:/config.ini
+      - ./client_py/config.ini:/config.ini
