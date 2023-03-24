@@ -40,16 +40,16 @@ class Server:
         If a problem arises in the communication with the client, the
         client socket will also be closed
         """
-        eof = False
+        #eof = False
         try:
             protocol = Protocol(client_sock)
-            while not eof:
-                msg, eof = protocol.receive_bets()
-
-                bets = parse_client_bets(msg)
-                store_bets(bets)
-
-                protocol.send_ack(True)
+            #while not eof:
+            msg, _eof = protocol.receive_bets()
+            
+            bets = parse_client_bets(msg)
+            store_bets(bets)
+            
+            protocol.send_ack(True)
         except OSError as e:
             logging.error(f'action: receive_message | result: fail | error: {e}')
         except Exception as e:

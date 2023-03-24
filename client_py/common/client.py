@@ -14,9 +14,10 @@ class Client:
         self._bets_readed = 0
         self._f = open(self._bets_file, 'r')
 
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.connect((ip, port))
-
+        self._ip = ip
+        self._port = port
+        self._socket = None
+        
     def _sigterm_handler(self, _signo, _stack_frame):
         logging.info(f'action: Handle SIGTERM | result: in_progress')
         self.close_connection()
@@ -25,9 +26,13 @@ class Client:
     def run(self):
         eof = False
         try:
-            protocol = Protocol(self._socket)
             while not eof:    
                 bets, eof = self._get_bets()            
+                
+                self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self._socket.connect((self._ip, self._port))
+
+                protocol = Protocol(self._socket)
                 protocol.send_bets(bets, eof)
 
                 ack = protocol.receive_ack()
