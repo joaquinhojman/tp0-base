@@ -41,3 +41,51 @@ services:
     volumes:
       - ./client_py/config.ini:/config.ini
       - ./protocol/protocol.ini:/protocol.ini
+
+  client2:
+    <<: *client
+    container_name: client2
+    environment:
+      - CLI_ID=2
+      - NOMBRE=Dibu
+      - APELLIDO=Martinez
+      - DOCUMENTO=23232323
+      - NACIMIENTO=1992-09-02
+      - NUMERO=2323
+      - CLI_LOG_LEVEL=DEBUG
+
+  client3:
+    <<: *client
+    container_name: client3
+    environment:
+      - CLI_ID=3
+      - NOMBRE=Julian
+      - APELLIDO=ALvarez
+      - DOCUMENTO=99999999
+      - NACIMIENTO=2000-01-31
+      - NUMERO=9999
+      - CLI_LOG_LEVEL=DEBUG
+
+  client4:
+    <<: *client
+    container_name: client4
+    environment:
+      - CLI_ID=4
+      - NOMBRE=Enzo
+      - APELLIDO=Fernandez
+      - DOCUMENTO=13000000
+      - NACIMIENTO=2001-01-17
+      - NUMERO=2424
+      - CLI_LOG_LEVEL=DEBUG
+
+  client5:
+    <<: *client
+    container_name: client5
+    environment:
+      - CLI_ID=5
+      - NOMBRE=Gonzalo
+      - APELLIDO=Montiel
+      - DOCUMENTO=09122018
+      - NACIMIENTO=1997-01-01
+      - NUMERO=4444
+      - CLI_LOG_LEVEL=DEBUG
