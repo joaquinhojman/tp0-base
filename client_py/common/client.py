@@ -34,7 +34,7 @@ class Client:
                 self._socket.connect((self._ip, self._port))
 
                 protocol = Protocol(self._socket)
-                protocol.send_bets(bets)
+                protocol.send_bets(bets, eof)
 
                 ack = protocol.receive_ack()
                 if ack:

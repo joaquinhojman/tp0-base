@@ -42,7 +42,7 @@ class Server:
         """
         try:
             protocol = Protocol(client_sock)
-            msg = protocol.receive_bets()
+            msg, _eof = protocol.receive_bets()
             
             bets = parse_client_bets(msg)
             store_bets(bets)
