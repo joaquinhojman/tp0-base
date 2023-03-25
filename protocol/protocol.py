@@ -35,7 +35,7 @@ class Protocol:
         self._not_eof = config_params["error"]
         self._cant_bytes_for_eof = config_params["cant_bytes_for_eof"]
 
-    def receive_bets(self):
+    def receive(self):
         """
         Receive a bet from the client.
         """
@@ -118,14 +118,14 @@ class Protocol:
         logging.info(f'action: receive_ack | result: success | ip: {addr[0]} | msg: {ack}')
         return ack
 
-    def send_bets(self, bets: str, eof: bool):
+    def send(self, bets: str, eof: bool):
         """
         Send bets to server.
         """
         bets_bytes = bets.encode('utf-8')
 
         bets_len = len(bets_bytes)
-        self._send_bets_len(bets_len)
+        self._send_packet_len(bets_len)
         self._send_eof(eof)
         
         expected_bytes_to_send = 0
@@ -147,7 +147,7 @@ class Protocol:
         addr = self._socket.getpeername()
         logging.info(f'action: send_bets | result: success | ip: {addr[0]} | msg: {bets}')
 
-    def _send_bets_len(self, bets_len: int):
+    def _send_packet_len(self, bets_len: int):
         bets_len_bytes = bets_len.to_bytes(self._cant_bytes_for_len, byteorder='big')
         sended = 0
         while sended < self._cant_bytes_for_len:

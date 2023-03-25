@@ -3,15 +3,17 @@ import logging
 
 from protocol.protocol import Protocol
 
-from common.utils import store_bets, parse_client_bets
+from common.utils import store_bets, parse_client_bets, load_bets, has_won
 
 class Server:
-    def __init__(self, port, listen_backlog):
+    def __init__(self, port, listen_backlog, agencias):
         # Initialize server socket
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_socket.bind(('', port))
         self._server_socket.listen(listen_backlog)
         self._sigterm_received = False
+        self._agencias = agencias
+        self._remaining_eofs = agencias
 
     def _sigterm_handler(self, _signo, _stack_frame):
         logging.info(f'action: Handle SIGTERM | result: in_progress')
@@ -28,10 +30,15 @@ class Server:
         communication with a client. After client with communucation
         finishes, servers starts to accept new connections again
         """
-        while not self._sigterm_received:
+        while not self._sigterm_received and self._remaining_eofs > 0:
             client_sock = self.__accept_new_connection()
             if client_sock is None: break
-            self.__handle_client_connection(client_sock)
+            eof = self.__handle_client_connection(client_sock)
+            self._remaining_eofs -= 1 if eof else 0
+
+        logging.info(f'action: sorteo | result: success')
+        winners = self._verify_winners()
+        
 
     def __handle_client_connection(self, client_sock):
         """
@@ -40,9 +47,10 @@ class Server:
         If a problem arises in the communication with the client, the
         client socket will also be closed
         """
+        eof = False
         try:
             protocol = Protocol(client_sock)
-            msg, _eof = protocol.receive_bets()
+            msg, eof = protocol.receive()
             
             bets = parse_client_bets(msg)
             store_bets(bets)
@@ -58,6 +66,7 @@ class Server:
             logging.error(f'action: apuesta_almacenada | result: fail | error: {e}')
         finally:
             self._close_client_connection(client_sock)
+            return eof
 
     def __accept_new_connection(self):
         """
@@ -79,3 +88,16 @@ class Server:
     def _close_client_connection(self, client_socket):
         client_socket.shutdown(socket.SHUT_RDWR)
         client_socket.close()
+
+    def _verify_winners(self):
+        '''
+        Return a dictionary with the winners of the bets. Agency as key, document winners list as value.
+        '''
+        winners = {}
+        for i in range(1, self._agencias + 1):
+            winners[i] = []
+        bets = load_bets()
+        for bet in bets:
+            if has_won(bet):
+                winners[bet.agency].append(bet.document)
+        return winners
