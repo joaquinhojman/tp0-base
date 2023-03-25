@@ -25,6 +25,7 @@ def initialize_config():
     config_params = {}
     try:
         config_params["port"] = int(os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
+        config_params["port_results"] = int(os.getenv('SERVER_PORT_RESULTS', config["DEFAULT"]["SERVER_PORT_RESULTS"]))
         config_params["listen_backlog"] = int(os.getenv('SERVER_LISTEN_BACKLOG', config["DEFAULT"]["SERVER_LISTEN_BACKLOG"]))
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
         config_params["agencias"] = int(os.getenv('AGENCIAS', config["DEFAULT"]["AGENCIAS"]))
@@ -40,6 +41,7 @@ def main():
     config_params = initialize_config()
     logging_level = config_params["logging_level"]
     port = config_params["port"]
+    port_results = config_params["port_results"]
     listen_backlog = config_params["listen_backlog"]
     agencias = config_params["agencias"]
 
@@ -51,7 +53,7 @@ def main():
                   f"listen_backlog: {listen_backlog} | logging_level: {logging_level}")
 
     # Initialize server and start server loop
-    server = Server(port, listen_backlog, agencias)
+    server = Server(port, port_results, listen_backlog, agencias)
     signal.signal(signal.SIGTERM, server._sigterm_handler)
     server.run()
 

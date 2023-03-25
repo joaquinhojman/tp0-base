@@ -26,6 +26,7 @@ def initialize_config():
     try:
         config_params["ip"] = os.getenv('SERVER_IP', config["DEFAULT"]["SERVER_IP"])
         config_params["port"] = int(os.getenv('SERVER_PORT', config["DEFAULT"]["SERVER_PORT"]))
+        config_params["port_result"] = int(os.getenv('SERVER_PORT_RESULTS', config["DEFAULT"]["SERVER_PORT_RESULTS"]))
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
         config_params["bets_per_batch"] = int(os.getenv('BETS_PER_BATCH', config["DEFAULT"]["BETS_PER_BATCH"]))
     except KeyError as e:
@@ -40,6 +41,7 @@ def main():
     config_params = initialize_config()
     ip = config_params["ip"]
     port = config_params["port"]
+    port_result = config_params["port_result"]
     logging_level = config_params["logging_level"]
     bets_per_batch = config_params["bets_per_batch"]
 
@@ -51,7 +53,7 @@ def main():
     #              f"listen_backlog: {listen_backlog} | logging_level: {logging_level}")
 
     # Initialize client
-    client = Client(port, ip, bets_per_batch)
+    client = Client(port, port_result, ip, bets_per_batch)
     signal.signal(signal.SIGTERM, client._sigterm_handler)
     client.run()
 

@@ -63,7 +63,7 @@ class Protocol:
             bet += received.decode('utf-8')
         
         addr = self._socket.getpeername()
-        logging.info(f'action: receive_bets | result: success | ip: {addr[0]} | msg: {bet} | eof: {eof}')
+        logging.info(f'action: receive | result: success | ip: {addr[0]} | msg: {bet} | eof: {eof}')
         
         return bet, eof
 
@@ -118,7 +118,7 @@ class Protocol:
         logging.info(f'action: receive_ack | result: success | ip: {addr[0]} | msg: {ack}')
         return ack
 
-    def send(self, bets: str, eof: bool):
+    def send(self, bets: str, eof: bool = False):
         """
         Send bets to server.
         """
@@ -145,7 +145,7 @@ class Protocol:
             expected_bytes_to_send -= sent
 
         addr = self._socket.getpeername()
-        logging.info(f'action: send_bets | result: success | ip: {addr[0]} | msg: {bets}')
+        logging.info(f'action: send | result: success | ip: {addr[0]} | msg: {bets}')
 
     def _send_packet_len(self, bets_len: int):
         bets_len_bytes = bets_len.to_bytes(self._cant_bytes_for_len, byteorder='big')

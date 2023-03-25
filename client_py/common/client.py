@@ -6,7 +6,7 @@ import socket
 from protocol.protocol import Protocol
 
 class Client:
-    def __init__(self, port, ip, bets_per_batch):
+    def __init__(self, port, port_result, ip, bets_per_batch):
         self._agencia = os.getenv('CLI_ID', "")
         self._bets_file = os.getenv('BETS_FILE', "")
         self._bets_per_batch = bets_per_batch
@@ -16,6 +16,7 @@ class Client:
 
         self._ip = ip
         self._port = port
+        self._port_result = port_result
         self._socket = None
         
     def _sigterm_handler(self, _signo, _stack_frame):
@@ -25,29 +26,33 @@ class Client:
         logging.info(f'action: Handle SIGTERM | result: success')
 
     def run(self):
-        eof = False
         try:
-            while not eof:    
-                bets, eof = self._get_bets()            
-                
-                self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self._socket.connect((self._ip, self._port))
-
-                protocol = Protocol(self._socket)
-                protocol.send(bets, eof)
-
-                ack = protocol.receive_ack()
-                if ack:
-                    logging.info(f'action: apuesta_enviada | result: success')
-                else:
-                    logging.info(f'action: apuesta_enviada | result: fail')
-                
-                self._close_connection()
+            self._send_bets()
+            self._recv_winners()
         except (OSError, Exception) as e:
             logging.error(f'action: send_bets | result: fail | error: {e}')
             self._close_connection()
 
         self._f.close()
+
+    def _send_bets(self):
+        eof = False
+        while not eof:    
+            bets, eof = self._get_bets()            
+            
+            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._socket.connect((self._ip, self._port))
+            
+            protocol = Protocol(self._socket)
+            protocol.send(bets, eof)
+            
+            ack = protocol.receive_ack()
+            if ack:
+                logging.info(f'action: apuesta_enviada | result: success')
+            else:
+                logging.info(f'action: apuesta_enviada | result: fail')
+            
+            self._close_connection()
 
     def _get_bets(self):
         bets = []
@@ -68,6 +73,19 @@ class Client:
                 eof = True
 
         return ";".join(bets), eof
+
+    def _recv_winners(self):
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._socket.connect((self._ip, self._port_result))
+        
+        protocol = Protocol(self._socket)
+        protocol.send(self._agencia)
+        winners, _eof = protocol.receive()
+        winners_list = winners.split(",")
+        
+        logging.info(f'action: consulta_ganadores | result: success | cant_ganadores: {len(winners_list)}')
+        
+        self._close_connection()
 
     def _close_connection(self):
         self._socket.shutdown(socket.SHUT_RDWR)

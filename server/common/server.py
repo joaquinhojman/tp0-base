@@ -6,14 +6,20 @@ from protocol.protocol import Protocol
 from common.utils import store_bets, parse_client_bets, load_bets, has_won
 
 class Server:
-    def __init__(self, port, listen_backlog, agencias):
+    def __init__(self, port, port_results, listen_backlog, agencias):
         # Initialize server socket
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_socket.bind(('', port))
         self._server_socket.listen(listen_backlog)
+
+        self._server_socket_results = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._server_socket_results.bind(('', port_results))
+        self._server_socket_results.listen(listen_backlog)
+
         self._sigterm_received = False
         self._agencias = agencias
         self._remaining_eofs = agencias
+        self._remaining_results = agencias
 
     def _sigterm_handler(self, _signo, _stack_frame):
         logging.info(f'action: Handle SIGTERM | result: in_progress')
@@ -30,15 +36,25 @@ class Server:
         communication with a client. After client with communucation
         finishes, servers starts to accept new connections again
         """
-        while not self._sigterm_received and self._remaining_eofs > 0:
-            client_sock = self.__accept_new_connection()
-            if client_sock is None: break
-            eof = self.__handle_client_connection(client_sock)
-            self._remaining_eofs -= 1 if eof else 0
+        while not self._sigterm_received: 
+            while self._remaining_eofs > 0:
+                client_sock = self.__accept_new_connection(self._server_socket)
+                if client_sock is None: break
+                eof = self.__handle_client_connection(client_sock)
+                self._remaining_eofs -= 1 if eof else 0
 
-        logging.info(f'action: sorteo | result: success')
-        winners = self._verify_winners()
-        
+            logging.info(f'action: sorteo | result: success')
+            winners = self._verify_winners()
+
+            while self._remaining_results > 0:
+                client_sock = self.__accept_new_connection(self._server_socket_results)
+                if client_sock is None: break
+                self.__handle_client_connection_results(client_sock, winners)
+                self._remaining_results -= 1
+
+            self._remaining_eofs = self._agencias
+            self._remaining_results = self._agencias
+
 
     def __handle_client_connection(self, client_sock):
         """
@@ -68,7 +84,7 @@ class Server:
             self._close_client_connection(client_sock)
             return eof
 
-    def __accept_new_connection(self):
+    def __accept_new_connection(self, server_socket: socket):
         """
         Accept new connections
 
@@ -79,15 +95,11 @@ class Server:
         # Connection arrived
         logging.info(f'action: accept_connections | result: in_progress')
         try:      
-            c, addr = self._server_socket.accept()
+            c, addr = server_socket.accept()
             logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')
             return c
         except OSError as e:
             return None
-
-    def _close_client_connection(self, client_socket):
-        client_socket.shutdown(socket.SHUT_RDWR)
-        client_socket.close()
 
     def _verify_winners(self):
         '''
@@ -101,3 +113,20 @@ class Server:
             if has_won(bet):
                 winners[bet.agency].append(bet.document)
         return winners
+
+    def __handle_client_connection_results(self, client_sock, winners):
+        '''
+        Send the winners to the client.
+        '''
+        try:
+            protocol = Protocol(client_sock)
+            client_id, _eof = protocol.receive()
+            protocol.send(",".join(winners[int(client_id)]))
+        except (OSError, Exception) as e:
+            logging.error(f'action: consulta_ganadores | result: fail | error: {e}')
+        finally:
+            self._close_client_connection(client_sock)
+    
+    def _close_client_connection(self, client_socket):
+        client_socket.shutdown(socket.SHUT_RDWR)
+        client_socket.close()
