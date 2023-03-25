@@ -89,5 +89,6 @@ class Client:
         self._close_connection()
 
     def _close_connection(self):
-        self._socket.shutdown(socket.SHUT_RDWR)
-        self._socket.close()
+        if self._socket is not None:
+            self._socket.shutdown(socket.SHUT_RDWR)
+            self._socket.close()

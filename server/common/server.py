@@ -39,6 +39,7 @@ class Server:
         finishes, servers starts to accept new connections again
         """
         while not self._sigterm_received: 
+            #phase 1: recv bets 
             while not self._full_remaining(self._remaining_eofs):
                 client_sock = self.__accept_new_connection(self._server_socket)
                 if client_sock is None: break
@@ -47,11 +48,13 @@ class Server:
             logging.info(f'action: sorteo | result: success')
             winners = self._verify_winners()
 
+            #phase 2: send winners
             while not self._full_remaining(self._remaining_results):
                 client_sock = self.__accept_new_connection(self._server_socket_results)
                 if client_sock is None: break
                 self.__handle_client_connection_results(client_sock, winners)
 
+            #phase 3: reset and repeat
             self._remaining_eofs = self._dict_remaining()
             self._remaining_results = self._dict_remaining()
 
