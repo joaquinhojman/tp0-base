@@ -18,14 +18,16 @@ class Server:
 
         self._sigterm_received = False
         self._agencias = agencias
-        self._remaining_eofs = agencias
-        self._remaining_results = agencias
+        self._remaining_eofs = self._dict_remaining()
+        self._remaining_results = self._dict_remaining()
 
     def _sigterm_handler(self, _signo, _stack_frame):
         logging.info(f'action: Handle SIGTERM | result: in_progress')
         self._sigterm_received = True
         self._server_socket.shutdown(socket.SHUT_RDWR)
         self._server_socket.close()
+        self._server_socket_results.shutdown(socket.SHUT_RDWR)
+        self._server_socket_results.close()
         logging.info(f'action: Handle SIGTERM | result: success')
 
     def run(self):
@@ -37,23 +39,21 @@ class Server:
         finishes, servers starts to accept new connections again
         """
         while not self._sigterm_received: 
-            while self._remaining_eofs > 0:
+            while not self._full_remaining(self._remaining_eofs):
                 client_sock = self.__accept_new_connection(self._server_socket)
                 if client_sock is None: break
                 eof = self.__handle_client_connection(client_sock)
-                self._remaining_eofs -= 1 if eof else 0
 
             logging.info(f'action: sorteo | result: success')
             winners = self._verify_winners()
 
-            while self._remaining_results > 0:
+            while not self._full_remaining(self._remaining_results):
                 client_sock = self.__accept_new_connection(self._server_socket_results)
                 if client_sock is None: break
                 self.__handle_client_connection_results(client_sock, winners)
-                self._remaining_results -= 1
 
-            self._remaining_eofs = self._agencias
-            self._remaining_results = self._agencias
+            self._remaining_eofs = self._dict_remaining()
+            self._remaining_results = self._dict_remaining()
 
 
     def __handle_client_connection(self, client_sock):
@@ -72,6 +72,8 @@ class Server:
             store_bets(bets)
             
             protocol.send_ack(True)
+
+            self._remaining_eofs[bets[0].agency] = eof
         except OSError as e:
             logging.error(f'action: receive_message | result: fail | error: {e}')
         except Exception as e:
@@ -82,7 +84,6 @@ class Server:
             logging.error(f'action: apuesta_almacenada | result: fail | error: {e}')
         finally:
             self._close_client_connection(client_sock)
-            return eof
 
     def __accept_new_connection(self, server_socket: socket):
         """
@@ -122,11 +123,26 @@ class Server:
             protocol = Protocol(client_sock)
             client_id, _eof = protocol.receive()
             protocol.send(",".join(winners[int(client_id)]))
+            ack = protocol.receive_ack()
+            if ack:
+                self._remaining_results[client_id] = True
         except (OSError, Exception) as e:
             logging.error(f'action: consulta_ganadores | result: fail | error: {e}')
         finally:
             self._close_client_connection(client_sock)
     
+    def _dict_remaining(self):
+        dict = {}
+        for i in range(1, self._agencias + 1):
+            dict[i] = False
+        return dict
+
+    def _full_remaining(self, dict):
+        for k,v in dict.items():
+            if not dict[k]:
+                return False
+        return True
+
     def _close_client_connection(self, client_socket):
         client_socket.shutdown(socket.SHUT_RDWR)
         client_socket.close()

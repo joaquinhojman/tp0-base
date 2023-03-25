@@ -81,9 +81,10 @@ class Client:
         protocol = Protocol(self._socket)
         protocol.send(self._agencia)
         winners, _eof = protocol.receive()
-        winners_list = winners.split(",")
+        protocol.send_ack(True)
+        cant_winners = len(winners.split(",")) if winners != "" else 0
         
-        logging.info(f'action: consulta_ganadores | result: success | cant_ganadores: {len(winners_list)}')
+        logging.info(f'action: consulta_ganadores | result: success | cant_ganadores: {cant_winners}')
         
         self._close_connection()
 
