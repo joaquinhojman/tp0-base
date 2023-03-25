@@ -14,7 +14,6 @@ def _initialize_config():
         config_params["max_cant_bytes_for_packet"] = int(os.getenv('MAX_CANT_BYTES_FOR_PACKET', config["DEFAULT"]["MAX_CANT_BYTES_FOR_PACKET"]))
         config_params["success"] = int(os.getenv('SUCCESS', config["DEFAULT"]["SUCCESS"]))
         config_params["error"] = int(os.getenv('ERROR', config["DEFAULT"]["ERROR"]))
-        config_params["cant_bytes_for_eof"] = int(os.getenv('CANT_BYTES_FOR_EOF', config["DEFAULT"]["CANT_BYTES_FOR_EOF"]))
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
@@ -31,16 +30,12 @@ class Protocol:
         self._success_ack = config_params["success"]
         self._error_ack = config_params["error"]
         self._cant_bytes_for_ack = config_params["cant_bytes_for_ack"]
-        self._eof = config_params["success"]
-        self._not_eof = config_params["error"]
-        self._cant_bytes_for_eof = config_params["cant_bytes_for_eof"]
 
     def receive_bets(self):
         """
         Receive a bet from the client.
         """
         packet_len = self._receive_packet_len()
-        eof = self._receive_eof()
         
         expected_bytes = 0
         bytes_received = 0
@@ -63,9 +58,9 @@ class Protocol:
             bet += received.decode('utf-8')
         
         addr = self._socket.getpeername()
-        logging.info(f'action: receive_bets | result: success | ip: {addr[0]} | msg: {bet} | eof: {eof}')
+        logging.info(f'action: receive_bets | result: success | ip: {addr[0]} | msg: {bet}')
         
-        return bet, eof
+        return bet
 
     def _receive_packet_len(self):
         """
@@ -82,22 +77,6 @@ class Protocol:
 
         packet_len = int.from_bytes(packet_len_bytes, byteorder='big')
         return packet_len
-
-    def _receive_eof(self):
-        """
-        Receive if there will come more batches, or if is this the last.
-        """
-        received = 0
-        eof_bytes = bytearray(self._cant_bytes_for_eof)
-        while received < self._cant_bytes_for_eof:
-            received = self._socket.recv(self._cant_bytes_for_eof - received)
-            if received is None:
-                raise OSError("Received None from socket on recv eof")
-            eof_bytes += received
-            received = len(eof_bytes)
-
-        eof = True if int.from_bytes(eof_bytes, byteorder='big') == self._eof else False
-        return eof
 
     def receive_ack(self):
         """
@@ -118,7 +97,7 @@ class Protocol:
         logging.info(f'action: receive_ack | result: success | ip: {addr[0]} | msg: {ack}')
         return ack
 
-    def send_bets(self, bets: str, eof: bool):
+    def send_bets(self, bets: str):
         """
         Send bets to server.
         """
@@ -126,7 +105,6 @@ class Protocol:
 
         bets_len = len(bets_bytes)
         self._send_bets_len(bets_len)
-        self._send_eof(eof)
         
         expected_bytes_to_send = 0
         bytes_sended = 0
@@ -156,20 +134,6 @@ class Protocol:
                 sended += sent
             else:
                 raise OSError("Socket connection broken during send bets len")
-
-    def _send_eof(self, eof: bool):
-        """
-        Send to the server if there will come more batches, or if is this the last.
-        """
-        eof = self._eof if eof == True else self._not_eof
-        eof_bytes = eof.to_bytes(self._cant_bytes_for_eof, byteorder='big')
-        sended = 0
-        while sended < self._cant_bytes_for_eof:
-            sent = self._socket.send(eof_bytes[sended:self._cant_bytes_for_eof])
-            if sent != -1:
-                sended += sent
-            else:
-                raise OSError("Socket connection broken during send eof")
 
     def send_ack(self, ack: bool):
         """

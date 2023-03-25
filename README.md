@@ -164,6 +164,5 @@ Breve explicación del protocolo: primero se envian 4 bytes (siempre esa cantida
 La apuesta se envia con los campos separados por coma ",". Si se enviara mas de una apuesta, se separan con ";".
 
 ### Ejercicio N°6: 
-La ejecución es analoga al ejercicio 5. Los archivos se len de .data/dataset/ asi que deben estar ahi adentro, de querer cambiar el nombre se puede hacerlo desde el docker compose. Se realizo un cambio en el protocolo, luego de enviar la longitud de la transmision y antes del mensaje (las apuestas), se envian 4 bytes que indican si el mensaje que se recibira es "eof", es decir, si es el ultimo batch de la transmision, o si se deben seguir esperando mensajes de apuestas. Este flag no se usa aun en este ejercicio del lado del servidor.
-
+La ejecución es analoga al ejercicio 5. Los archivos se len de .data/dataset/ asi que deben estar ahi adentro, de querer cambiar el nombre se puede hacerlo desde el docker compose.
 Si se desea cambiar la cantidad de apuestas que viajan en un batch, se puede hacer desde client_py/config.ini, en el campo BETS_PER_BATCH, que por default esta en 10.

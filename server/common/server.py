@@ -40,11 +40,9 @@ class Server:
         If a problem arises in the communication with the client, the
         client socket will also be closed
         """
-        #eof = False
         try:
             protocol = Protocol(client_sock)
-            #while not eof:
-            msg, _eof = protocol.receive_bets()
+            msg = protocol.receive_bets()
             
             bets = parse_client_bets(msg)
             store_bets(bets)
