@@ -166,3 +166,8 @@ La apuesta se envia con los campos separados por coma ",". Si se enviara mas de 
 ### Ejercicio N°6: 
 La ejecución es analoga al ejercicio 5. Los archivos se len de .data/dataset/ asi que deben estar ahi adentro, de querer cambiar el nombre se puede hacerlo desde el docker compose.
 Si se desea cambiar la cantidad de apuestas que viajan en un batch, se puede hacer desde client_py/config.ini, en el campo BETS_PER_BATCH, que por default esta en 10.
+
+### Ejercicio N°7:
+ La ejecución es analoga al ejercicio 6. Se modifico el protocolo para que entre la longitud del mensaje y el mensaje propiamente dicho, se envien 4 bytes con la información sobre si este es el ultimo batch que enviara el cliente con apuestas.
+ Si se cambia la cantidad de agencias existentes, se debe cambiar tambien ese valor en config.ini del server.
+ Luego se reutiliza el protocolo para enviar los resultados a cada agencia, para ello el server usa otro socket "aceptador" bindeado en el puerto 123456. Esto puede cambiarse desde config.ini del cliente y del servidor.
