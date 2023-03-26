@@ -28,7 +28,7 @@ class Client:
     def run(self):
         try:
             self._send_bets()
-            self._recv_winners()
+            #self._recv_winners()
         except (OSError, Exception) as e:
             logging.error(f'action: send_bets | result: fail | error: {e}')
             self._close_connection()

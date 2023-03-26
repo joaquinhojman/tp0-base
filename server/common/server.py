@@ -1,5 +1,6 @@
 import socket
 import logging
+import multiprocessing
 
 from protocol.protocol import Protocol
 
@@ -31,6 +32,26 @@ class Server:
         logging.info(f'action: Handle SIGTERM | result: success')
 
     def run(self):
+        file_lock = multiprocessing.Lock()
+        dict_lock = multiprocessing.Lock()
+        cpus = multiprocessing.cpu_count()
+
+        proccesses = []
+        while not self._sigterm_received :
+            #phase 1: recv bets
+            while not self._full_remaining(self._remaining_eofs, dict_lock):
+                client_sock = self.__accept_new_connection(self._server_socket)
+                if client_sock is None: break
+                p = multiprocessing.Process(target=self.__handle_client_connection, args=(client_sock, file_lock, dict_lock))
+                p.start()
+                proccesses.append(p)
+                if len(proccesses) == cpus: #avoid ddos atacks
+                    for p in proccesses:
+                        p.join(10) #if in 10 seconds the process is not finished, kill it
+                    proccesses = []
+
+    
+    def _run(self):
         """
         Dummy Server loop
 
@@ -59,7 +80,7 @@ class Server:
             self._remaining_results = self._dict_remaining()
 
 
-    def __handle_client_connection(self, client_sock):
+    def __handle_client_connection(self, client_sock, file_lock, dict_lock):
         """
         Read message from a specific client socket and closes the socket
 
@@ -72,11 +93,15 @@ class Server:
             msg, eof = protocol.receive()
             
             bets = parse_client_bets(msg)
+            file_lock.acquire()
             store_bets(bets)
-            
+            file_lock.release()
+
             protocol.send_ack(True)
 
+            dict_lock.acquire()
             self._remaining_eofs[bets[0].agency] = eof
+            dict_lock.release()
         except OSError as e:
             logging.error(f'action: receive_message | result: fail | error: {e}')
         except Exception as e:
@@ -140,11 +165,15 @@ class Server:
             dict[i] = False
         return dict
 
-    def _full_remaining(self, dict):
+    def _full_remaining(self, dict, dict_lock):
+        res = True
+        dict_lock.acquire()
         for k,v in dict.items():
             if not dict[k]:
-                return False
-        return True
+                res = False
+                break
+        dict_lock.release()
+        return res
 
     def _close_client_connection(self, client_socket):
         client_socket.shutdown(socket.SHUT_RDWR)
