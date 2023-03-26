@@ -171,3 +171,6 @@ Si se desea cambiar la cantidad de apuestas que viajan en un batch, se puede hac
  La ejecución es analoga al ejercicio 6. Se modifico el protocolo para que entre la longitud del mensaje y el mensaje propiamente dicho, se envien 4 bytes con la información sobre si este es el ultimo batch que enviara el cliente con apuestas.
  Si se cambia la cantidad de agencias existentes, se debe cambiar tambien ese valor en config.ini del server.
  Luego se reutiliza el protocolo para enviar los resultados a cada agencia, para ello el server usa otro socket "aceptador" bindeado en el puerto 123456. Esto puede cambiarse desde config.ini del cliente y del servidor.
+
+### Ejercicio N°8:
+ La ejecución es analoga al ejercicio 6 y 7. Se utilizan procesos de python para la ejecución paralela. Se mantiene el hecho de que todas las agencias deben mandar sus apuestas antes de que se realice el sorteo y se envien los resultados.  Si se cambia la cantidad de agencias existentes, se debe cambiar tambien ese valor en config.ini del server.

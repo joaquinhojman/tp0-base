@@ -32,7 +32,7 @@ class Server:
 
     def run(self):
         file_lock = multiprocessing.Lock()
-        barrier = multiprocessing.Barrier(self._agencias + 1)
+        barrier = multiprocessing.Barrier(self._agencias + 1) # +1 for the main process
         while not self._sigterm_received:
             proccesses = []
             while len(proccesses) != self._agencias:
@@ -43,7 +43,7 @@ class Server:
                 p = multiprocessing.Process(target=self._handle_client_connection_phase_1, args=(client_sock, file_lock, barrier))
                 proccesses.append(p.start()) 
             try:
-                barrier.wait()
+                barrier.wait() # wait for all clients send their bets
             except Exception as e:
                 logging.error(f'action: barrier | result: fail | error: {e}')
             self._join_proccesses(proccesses)
