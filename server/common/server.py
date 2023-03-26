@@ -31,17 +31,16 @@ class Server:
         logging.info(f'action: Handle SIGTERM | result: success')
 
     def run(self):
+        file_lock = multiprocessing.Lock()
+        barrier = multiprocessing.Barrier(self._agencias + 1)
         while not self._sigterm_received:
-            file_lock = multiprocessing.Lock()
-            barrier = multiprocessing.Barrier(self._agencias + 1)
             proccesses = []
-            
             while len(proccesses) != self._agencias:
                 #phase 1: recv bets
                 logging.info(f'action: while | proccesses: {proccesses}')
                 client_sock = self.__accept_new_connection(self._server_socket)
                 if client_sock is None: break
-                p = multiprocessing.Process(target=self.__handle_client_connection_phase_1, args=(client_sock, file_lock, barrier))
+                p = multiprocessing.Process(target=self._handle_client_connection_phase_1, args=(client_sock, file_lock, barrier))
                 proccesses.append(p.start()) 
             try:
                 barrier.wait()
@@ -57,18 +56,19 @@ class Server:
                 #phase 2: send results
                 client_sock = self.__accept_new_connection(self._server_socket_results)
                 if client_sock is None: break
-                p = multiprocessing.Process(target=self.__handle_client_connection_phase_2, args=(client_sock, winners))
+                p = multiprocessing.Process(target=self._handle_client_connection_phase_2, args=(client_sock, winners))
                 proccesses.append(p.start())
             self._join_proccesses(proccesses)
+            barrier.reset()
 
-    def __handle_client_connection_phase_1(self, socket, lock, barrier: multiprocessing.Barrier):
+    def _handle_client_connection_phase_1(self, socket, lock, barrier: multiprocessing.Barrier):
         self.__handle_client_connection_bets(socket, lock)
         try:
             barrier.wait()
         except Exception as e:
-            logging.error(f'action: barrier___handle_client_connection_phase_1 | result: fail | error: {e}')
+            logging.error(f'action: barrier_handle_client_connection_phase_1 | result: fail | error: {e}')
         
-    def __handle_client_connection_phase_2(self, socket, winners):
+    def _handle_client_connection_phase_2(self, socket, winners):
         self.__handle_client_connection_results(socket, winners)
 
     def _join_proccesses(self, proccesses):
