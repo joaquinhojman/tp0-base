@@ -28,7 +28,7 @@ class Client:
     def run(self):
         try:
             self._send_bets()
-            #self._recv_winners()
+            self._recv_winners()
         except (OSError, Exception) as e:
             logging.error(f'action: send_bets | result: fail | error: {e}')
             self._close_connection()
@@ -37,13 +37,12 @@ class Client:
 
     def _send_bets(self):
         eof = False
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._socket.connect((self._ip, self._port))
+        protocol = Protocol(self._socket)
         while not eof:    
             bets, eof = self._get_bets()            
             
-            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._socket.connect((self._ip, self._port))
-            
-            protocol = Protocol(self._socket)
             protocol.send(bets, eof)
             
             ack = protocol.receive_ack()
@@ -52,7 +51,7 @@ class Client:
             else:
                 logging.info(f'action: apuesta_enviada | result: fail')
             
-            self._close_connection()
+        self._close_connection()
 
     def _get_bets(self):
         bets = []
