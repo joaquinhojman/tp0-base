@@ -24,42 +24,60 @@ class Server:
     def _sigterm_handler(self, _signo, _stack_frame):
         logging.info(f'action: Handle SIGTERM | result: in_progress')
         self._sigterm_received = True
-        self._server_socket.shutdown(socket.SHUT_RDWR)
-        self._server_socket.close()
-        self._server_socket_results.shutdown(socket.SHUT_RDWR)
-        self._server_socket_results.close()
-        logging.info(f'action: Handle SIGTERM | result: success')
+        try:
+            self._server_socket.shutdown(socket.SHUT_RDWR)
+            self._server_socket.close()
+            self._server_socket_results.shutdown(socket.SHUT_RDWR)
+            self._server_socket_results.close()
+            logging.info(f'action: Handle SIGTERM | result: success')
+        except:
+            pass
 
     def run(self):
+        try:
+            while not self._sigterm_received:
+                self._run()
+        except Exception as e:
+            logging.error(f'action: run | result: fail | error: {e}')
+            self._sigterm_handler()
+            return
+
+    def _run(self):
         file_lock = multiprocessing.Lock()
         barrier = multiprocessing.Barrier(self._agencias + 1) # +1 for the main process
-        while not self._sigterm_received:
-            proccesses = []
-            while len(proccesses) != self._agencias:
-                #phase 1: recv bets
-                logging.info(f'action: while | proccesses: {proccesses}')
-                client_sock = self.__accept_new_connection(self._server_socket)
-                if client_sock is None: break
-                p = multiprocessing.Process(target=self._handle_client_connection_phase_1, args=(client_sock, file_lock, barrier))
-                proccesses.append(p.start()) 
-            try:
-                barrier.wait() # wait for all clients send their bets
-            except Exception as e:
-                logging.error(f'action: barrier | result: fail | error: {e}')
-            self._join_proccesses(proccesses)
 
-            logging.info(f'action: sorteo | result: success')
-            winners = self._verify_winners()
-
-            proccesses = []
-            while len(proccesses) != self._agencias:
-                #phase 2: send results
-                client_sock = self.__accept_new_connection(self._server_socket_results)
-                if client_sock is None: break
-                p = multiprocessing.Process(target=self._handle_client_connection_phase_2, args=(client_sock, winners))
-                proccesses.append(p.start())
+        #phase 1: recv bets
+        proccesses = []
+        while len(proccesses) != self._agencias:
+            client_sock = self.__accept_new_connection(self._server_socket)
+            if client_sock is None: break
+            p = multiprocessing.Process(target=self._handle_client_connection_phase_1, args=(client_sock, file_lock, barrier))
+            proccesses.append(p.start()) 
+        
+        if len(proccesses) != self._agencias: #something went wrong
+            logging.error(f'action: recv bets | result: fail')
             self._join_proccesses(proccesses)
-            barrier.reset()
+            return
+        
+        try:
+            barrier.wait() # wait for all clients send their bets
+        except Exception as e:
+            logging.error(f'action: barrier | result: fail | error: {e}')
+            self._join_proccesses(proccesses)
+            return
+
+        self._join_proccesses(proccesses)
+        logging.info(f'action: sorteo | result: success')
+        winners = self._verify_winners()
+
+        #phase 2: send results
+        proccesses = []
+        while len(proccesses) != self._agencias:
+            client_sock = self.__accept_new_connection(self._server_socket_results)
+            if client_sock is None: break
+            p = multiprocessing.Process(target=self._handle_client_connection_phase_2, args=(client_sock, winners))
+            proccesses.append(p.start())
+        self._join_proccesses(proccesses)
 
     def _handle_client_connection_phase_1(self, socket, lock, barrier: multiprocessing.Barrier):
         self.__handle_client_connection_bets(socket, lock)
