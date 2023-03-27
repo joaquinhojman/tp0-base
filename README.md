@@ -174,3 +174,6 @@ Si se desea cambiar la cantidad de apuestas que viajan en un batch, se puede hac
 
 ### Ejercicio N°8:
  La ejecución es analoga al ejercicio 6 y 7. Se utilizan procesos de python para la ejecución paralela. Se mantiene el hecho de que todas las agencias deben mandar sus apuestas antes de que se realice el sorteo y se envien los resultados.  Si se cambia la cantidad de agencias existentes, se debe cambiar tambien ese valor en config.ini del server.
+
+Para acceder al archivo y escribir las apuestas los procesos deben acceder a un lock, el cual liberan una vez terminada la escritura. Para realizar el sorteo se utiliza una barrera, que se desbloquea cuando todos los clientes han terminado de mandar sus apuestas, y entonces el main proccess procede a realizar dicho sorteo y avanza a la fase de envio de resultados.
+ 

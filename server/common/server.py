@@ -27,11 +27,14 @@ class Server:
         try:
             self._server_socket.shutdown(socket.SHUT_RDWR)
             self._server_socket.close()
-            self._server_socket_results.shutdown(socket.SHUT_RDWR)
-            self._server_socket_results.close()
-            logging.info(f'action: Handle SIGTERM | result: success')
         except:
             pass
+        try:
+            self._server_socket_results.shutdown(socket.SHUT_RDWR)
+            self._server_socket_results.close()
+        except:
+            pass
+        logging.info(f'action: Handle SIGTERM | result: success')
 
     def run(self):
         try:
@@ -92,7 +95,7 @@ class Server:
     def _join_proccesses(self, proccesses):
         for p in proccesses:
             if p is None: continue
-            p.join()
+            p.join(300) # 5 minutes... should be enough
 
     def __handle_client_connection_bets(self, client_sock, file_lock):
         """
