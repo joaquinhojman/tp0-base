@@ -21,7 +21,7 @@ class Client:
         
     def _sigterm_handler(self, _signo, _stack_frame):
         logging.info(f'action: Handle SIGTERM | result: in_progress')
-        self.close_connection()
+        self._close_connection()
         self._f.close()
         logging.info(f'action: Handle SIGTERM | result: success')
 
@@ -90,7 +90,6 @@ class Client:
     def _close_connection(self):
         if self._socket is not None:
             try:
-                self._socket.shutdown(socket.SHUT_RDWR)
                 self._socket.close()
             except OSError:
                 pass

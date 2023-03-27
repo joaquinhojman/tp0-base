@@ -25,12 +25,10 @@ class Server:
         logging.info(f'action: Handle SIGTERM | result: in_progress')
         self._sigterm_received = True
         try:
-            self._server_socket.shutdown(socket.SHUT_RDWR)
             self._server_socket.close()
         except:
             pass
         try:
-            self._server_socket_results.shutdown(socket.SHUT_RDWR)
             self._server_socket_results.close()
         except:
             pass
@@ -121,8 +119,8 @@ class Server:
         except Exception as e:
             try:
                 protocol.send_ack(False)
-            except OSError as e:
-                logging.error(f'action: receive_message | result: fail | error: {e}')
+            except OSError as _e:
+                logging.error(f'action: receive_message | result: fail | error: {_e}')
             logging.error(f'action: apuesta_almacenada | result: fail | error: {e}')
         finally:
             self._close_client_connection(client_sock)
@@ -172,5 +170,4 @@ class Server:
             self._close_client_connection(client_sock)
 
     def _close_client_connection(self, client_socket):
-        client_socket.shutdown(socket.SHUT_RDWR)
         client_socket.close()
