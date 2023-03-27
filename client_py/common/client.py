@@ -89,5 +89,8 @@ class Client:
 
     def _close_connection(self):
         if self._socket is not None:
-            self._socket.shutdown(socket.SHUT_RDWR)
-            self._socket.close()
+            try:
+                self._socket.shutdown(socket.SHUT_RDWR)
+                self._socket.close()
+            except OSError:
+                pass
