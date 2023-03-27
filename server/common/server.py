@@ -24,9 +24,7 @@ class Server:
     def _sigterm_handler(self, _signo, _stack_frame):
         logging.info(f'action: Handle SIGTERM | result: in_progress')
         self._sigterm_received = True
-        self._server_socket.shutdown(socket.SHUT_RDWR)
         self._server_socket.close()
-        self._server_socket_results.shutdown(socket.SHUT_RDWR)
         self._server_socket_results.close()
         logging.info(f'action: Handle SIGTERM | result: success')
 
@@ -82,8 +80,8 @@ class Server:
         except Exception as e:
             try:
                 protocol.send_ack(False)
-            except OSError as e:
-                logging.error(f'action: receive_message | result: fail | error: {e}')
+            except OSError as _e:
+                logging.error(f'action: receive_message | result: fail | error: {_e}')
             logging.error(f'action: apuesta_almacenada | result: fail | error: {e}')
         finally:
             self._close_client_connection(client_sock)
@@ -147,5 +145,4 @@ class Server:
         return True
 
     def _close_client_connection(self, client_socket):
-        client_socket.shutdown(socket.SHUT_RDWR)
         client_socket.close()
