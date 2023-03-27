@@ -19,7 +19,7 @@ class Client:
 
     def _sigterm_handler(self, _signo, _stack_frame):
         logging.info(f'action: Handle SIGTERM | result: in_progress')
-        self.close_connection()
+        self._close_connection()
         logging.info(f'action: Handle SIGTERM | result: success')
 
     def run(self):
@@ -42,5 +42,4 @@ class Client:
         return self._agencia + "," + self._nombre + "," + self._apellido + "," + self._documento + "," + self._nacimiento + "," + self._numero
 
     def _close_connection(self):
-        self._socket.shutdown(socket.SHUT_RDWR)
         self._socket.close()
