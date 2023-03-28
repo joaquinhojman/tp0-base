@@ -12,7 +12,6 @@ class Server:
     def _sigterm_handler(self, _signo, _stack_frame):
         logging.info(f'action: Handle SIGTERM | result: in_progress')
         self._sigterm_received = True
-        self._server_socket.shutdown(socket.SHUT_RDWR)
         self._server_socket.close()
         logging.info(f'action: Handle SIGTERM | result: success')
 
