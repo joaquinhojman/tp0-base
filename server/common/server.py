@@ -8,7 +8,7 @@ from protocol.protocol import Protocol
 from common.utils import store_bets, parse_client_bets, load_bets, has_won
 
 class Server:
-    def __init__(self, port, port_results, listen_backlog, agencias):
+    def __init__(self, port, port_results, listen_backlog, agencias, timeout):
         # Initialize server socket
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_socket.bind(('', port))
@@ -19,6 +19,7 @@ class Server:
         self._server_socket_results.listen(listen_backlog)
 
         self._sigterm_received = False
+        self._timeout = timeout
         self._agencias = agencias
 
     def _sigterm_handler(self, _signo, _stack_frame):
@@ -61,7 +62,7 @@ class Server:
             return
         
         try:
-            barrier.wait(timeout=300) # wait for all clients send their bets
+            barrier.wait(timeout=self._timeout) # wait for all clients send their bets
         except Exception as e:
             logging.error(f'action: barrier | result: fail | error: {e}')
             self._join_proccesses(proccesses)
@@ -93,7 +94,7 @@ class Server:
     def _join_proccesses(self, proccesses):
         for p in proccesses:
             if p is None: continue
-            p.join(300) # 5 minutes... its a lot of time
+            p.join(self._timeout) # 5 minutes... its a lot of time
 
     def __handle_client_connection_bets(self, client_sock, file_lock):
         """
@@ -136,7 +137,7 @@ class Server:
         # Connection arrived
         logging.info(f'action: accept_connections | result: in_progress')
         try:
-            server_socket.settimeout(300)
+            server_socket.settimeout(self._timeout)
             c, addr = server_socket.accept()
             server_socket.settimeout(None)
             logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')

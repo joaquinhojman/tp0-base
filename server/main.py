@@ -29,6 +29,7 @@ def initialize_config():
         config_params["listen_backlog"] = int(os.getenv('SERVER_LISTEN_BACKLOG', config["DEFAULT"]["SERVER_LISTEN_BACKLOG"]))
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
         config_params["agencias"] = int(os.getenv('AGENCIAS', config["DEFAULT"]["AGENCIAS"]))
+        config_params["timeout"] = int(os.getenv('TIMEOUT', config["DEFAULT"]["TIMEOUT"]))
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
@@ -44,6 +45,7 @@ def main():
     port_results = config_params["port_results"]
     listen_backlog = config_params["listen_backlog"]
     agencias = config_params["agencias"]
+    timeout = config_params["timeout"]
 
     initialize_log(logging_level)
 
@@ -53,7 +55,7 @@ def main():
                   f"listen_backlog: {listen_backlog} | logging_level: {logging_level}")
 
     # Initialize server and start server loop
-    server = Server(port, port_results, listen_backlog, agencias)
+    server = Server(port, port_results, listen_backlog, agencias, timeout)
     signal.signal(signal.SIGTERM, server._sigterm_handler)
     server.run()
 
