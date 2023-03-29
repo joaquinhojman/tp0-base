@@ -6,7 +6,7 @@ from protocol.protocol import Protocol
 from common.utils import store_bets, parse_client_bets, load_bets, has_won
 
 class Server:
-    def __init__(self, port, port_results, listen_backlog, agencias):
+    def __init__(self, port, port_results, listen_backlog, agencias, timeout):
         # Initialize server socket
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_socket.bind(('', port))
@@ -17,6 +17,7 @@ class Server:
         self._server_socket_results.listen(listen_backlog)
 
         self._sigterm_received = False
+        self._timeout = timeout
         self._agencias = agencias
         self._remaining_eofs = self._dict_remaining()
         self._remaining_results = self._dict_remaining()
@@ -42,6 +43,12 @@ class Server:
                 client_sock = self.__accept_new_connection(self._server_socket)
                 if client_sock is None: break
                 eof = self.__handle_client_connection(client_sock)
+
+            if not self._full_remaining(self._remaining_eofs):
+                logging.error(f'action: recv bets | result: fail | error: not all bets received')
+                self._remaining_eofs = self._dict_remaining()
+                self._remaining_results = self._dict_remaining()
+                continue
 
             logging.info(f'action: sorteo | result: success')
             winners = self._verify_winners()
@@ -97,7 +104,9 @@ class Server:
         # Connection arrived
         logging.info(f'action: accept_connections | result: in_progress')
         try:      
+            server_socket.settimeout(self._timeout)
             c, addr = server_socket.accept()
+            server_socket.settimeout(None)
             logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')
             return c
         except OSError as e:
