@@ -40,6 +40,7 @@ class Protocol:
         expected_bytes = 0
         bytes_received = 0
         bet = ""
+        bet_bytes = bytearray()
         while bytes_received < packet_len:
             if expected_bytes == 0:
                 if packet_len - bytes_received > self._max_cant_bytes_for_packet:
@@ -55,8 +56,8 @@ class Protocol:
             expected_bytes -= len(received) #for possible short read
 
             bytes_received += len(received)
-            bet += received.decode('utf-8')
-        
+            bet_bytes += received
+        bet = bet_bytes.decode('utf-8')
         addr = self._socket.getpeername()
         logging.info(f'action: receive_bets | result: success | ip: {addr[0]} | msg: {bet}')
         
