@@ -137,7 +137,7 @@ Finalmente, se pide a los alumnos leer atentamente y **tener en cuenta** los cri
 ## ¿Como ejecutar cada ejercicio?
 
 ### Ejercicio N°1:
-Simplemente ejecutando docker-compose-up y docker-compose-logs se puede ver en la consola como ahora hay dos clientes que intercambian mensajes con el servidor. El cliente original es "client1" y el cliente nuevo es "client2". El id del cliente se indica tambien en el campo "msg".
+Simplemente ejecutando make docker-compose-up y make docker-compose-logs se puede ver en la consola como ahora hay dos clientes que intercambian mensajes con el servidor. El cliente original es "client1" y el cliente nuevo es "client2". El id del cliente se indica tambien en el campo "msg".
 
 ### Ejercicio N°1.1:
 Usage: python3 docker-compose-multiple-clients-generator.py <number of clients> <name of new docker compose>.yaml
@@ -148,11 +148,11 @@ Comentario de implementacion: se decidio que el script copie el archivo original
 Esto implica la "limitación" de que el archivo nuevo debe llamarse diferente al archivo docker compose original (docker-compose-dev).
 
 ### Ejercicio N°2:
-Simplemente ejecutando docker-compose-up y docker-compose-logs se puede correr el programa, no hay cambios en la forma de ejecutar.
+Simplemente ejecutando make docker-compose-up y make docker-compose-logs se puede correr el programa, no hay cambios en la forma de ejecutar.
 
 ### Ejercicio N°3:
-La forma de ejecutar este ejercicio es docker-compose-up que levanta servidor (y cliente) y luego para testear el servidor ejecutar docker-compose-server-test. La palabra enviada es PING asi que debemos recibir PING como respuesta por consola. Si no lo recibimos o recibimos otra cosa, hay problemas con el servidor.
+La forma de ejecutar este ejercicio es make docker-compose-up que levanta servidor (y cliente) y luego para testear el servidor ejecutar make docker-compose-server-test. La palabra enviada es PING asi que debemos recibir PING como respuesta por consola. Si no lo recibimos o recibimos otra cosa, hay problemas con el servidor.
 
 ### Ejercicio N°4: 
 -t 1 significa que se espera 1 segundo antes de hacer kill al container.
-Se ejecuta normalmente el programa, al hacer docker-compose-down se veran los logs que indican que se manejo correctamente la señal SIGTERM tanto en el cliente como en el servidor.
+Se ejecuta normalmente el programa, al hacer make docker-compose-down se veran los logs que indican que se manejo correctamente la señal SIGTERM tanto en el cliente como en el servidor.
