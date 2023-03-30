@@ -137,7 +137,7 @@ Finalmente, se pide a los alumnos leer atentamente y **tener en cuenta** los cri
 ## ¿Como ejecutar cada ejercicio?
 
 ### Ejercicio N°1:
-Simplemente ejecutando docker-compose-up y docker-compose-logs se puede ver en la consola como ahora hay dos clientes que intercambian mensajes con el servidor. El cliente original es "client1" y el cliente nuevo es "client2". El id del cliente se indica tambien en el campo "msg".
+Simplemente ejecutando make docker-compose-up y make docker-compose-logs se puede ver en la consola como ahora hay dos clientes que intercambian mensajes con el servidor. El cliente original es "client1" y el cliente nuevo es "client2". El id del cliente se indica tambien en el campo "msg".
 
 ### Ejercicio N°1.1:
 Usage: python3 docker-compose-multiple-clients-generator.py <number of clients> <name of new docker compose>.yaml
@@ -148,4 +148,4 @@ Comentario de implementacion: se decidio que el script copie el archivo original
 Esto implica la "limitación" de que el archivo nuevo debe llamarse diferente al archivo docker compose original (docker-compose-dev).
 
 ### Ejercicio N°2:
-Simplemente ejecutando docker-compose-up y docker-compose-logs se puede correr el programa, no hay cambios en la forma de ejecutar.
+Simplemente ejecutando make docker-compose-up y make docker-compose-logs se puede correr el programa, no hay cambios en la forma de ejecutar.
