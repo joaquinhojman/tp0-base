@@ -137,4 +137,4 @@ Finalmente, se pide a los alumnos leer atentamente y **tener en cuenta** los cri
 ## ¿Como ejecutar cada ejercicio?
 
 ### Ejercicio N°1:
-Simplemente ejecutando docker-compose-up y docker-compose-logs se puede ver en la consola como ahora hay dos clientes que intercambian mensajes con el servidor. El cliente original es "client1" y el cliente nuevo es "client2". El id del cliente se indica tambien en el campo "msg".
+Simplemente ejecutando make docker-compose-up y make docker-compose-logs se puede ver en la consola como ahora hay dos clientes que intercambian mensajes con el servidor. El cliente original es "client1" y el cliente nuevo es "client2". El id del cliente se indica tambien en el campo "msg".
