@@ -64,7 +64,7 @@ class Protocol:
             bet_bytes += received        
         bet = bet_bytes.decode('utf-8')
         addr = self._socket.getpeername()
-        logging.info(f'action: receive | result: success | ip: {addr[0]} | msg: {bet} | eof: {eof}')
+        #logging.info(f'action: receive | result: success | ip: {addr[0]} | msg: {bet} | eof: {eof}')
         
         return bet, eof
 
@@ -116,7 +116,7 @@ class Protocol:
         ack = True if int.from_bytes(ack_bytes, byteorder='big') == self._success_ack else False
 
         addr = self._socket.getpeername()
-        logging.info(f'action: receive_ack | result: success | ip: {addr[0]} | msg: {ack}')
+        #logging.info(f'action: receive_ack | result: success | ip: {addr[0]} | msg: {ack}')
         return ack
 
     def send(self, bets: str, eof: bool = False):
@@ -146,7 +146,7 @@ class Protocol:
             expected_bytes_to_send -= sent
 
         addr = self._socket.getpeername()
-        logging.info(f'action: send | result: success | ip: {addr[0]} | msg: {bets}')
+        #logging.info(f'action: send | result: success | ip: {addr[0]} | msg: {bets}')
 
     def _send_packet_len(self, bets_len: int):
         bets_len_bytes = bets_len.to_bytes(self._cant_bytes_for_len, byteorder='big')
@@ -186,4 +186,4 @@ class Protocol:
             else:
                 raise OSError("Socket connection broken during send ack")
         addr = self._socket.getpeername()
-        logging.info(f'action: send_ack | result: success | ip: {addr[0]} | msg: {ack}')
+        #logging.info(f'action: send_ack | result: success | ip: {addr[0]} | msg: {ack}')
